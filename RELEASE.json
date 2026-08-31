@@ -1,0 +1,28 @@
+{
+  "agents": [
+    "codex",
+    "claude-code"
+  ],
+  "cli": {
+    "package": "@ztalkai/spec-flow-cli",
+    "version": "0.1.0"
+  },
+  "installers": {
+    "github": {
+      "archiveSha256": "3b8ac6b30336802fc1a858d7c084e11cdf24ac1a761ca90b68022d7d729208de",
+      "version": "2.98.0"
+    },
+    "skills": {
+      "package": "skills",
+      "version": "1.5.23"
+    }
+  },
+  "publicRepository": "ztalkai/spec-flow-skill",
+  "skillVersion": "0.1.2",
+  "supersedes": [
+    "skill-v0.1.0",
+    "skill-v0.1.1"
+  ],
+  "sourceSha": "e9196607b573f842b38c1db84071237f16bfddf0",
+  "sourceTag": "skill-v0.1.2"
+}

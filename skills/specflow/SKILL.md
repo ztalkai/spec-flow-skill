@@ -1,18 +1,30 @@
 ---
 name: specflow
 description: Author and govern authoritative Specs and the Project Glossary through the supported SpecFlow CLI.
+license: Proprietary. All rights reserved.
+skill-version: "0.1.2"
 compatible-cli: "@ztalkai/spec-flow-cli@0.1.0"
 ---
 
 # SpecFlow
 
-Use the official public CLI as the only SpecFlow operation boundary. Install the exact
-compatible release; do not replace it with `latest`, a raw HTTP command, or a private
-copy:
+Use the official public CLI as the only SpecFlow operation boundary. Before the first
+resource command, run `specflow --version` and compare the result with `0.1.0`.
+
+- If `specflow` is not installed, install the exact compatible release:
 
 ```bash
 npm install --global @ztalkai/spec-flow-cli@0.1.0
 ```
+
+- If the installed version is different, stop and show the User that exact install
+  command as the repair command. Do not run that repair command automatically or
+  silently upgrade or downgrade an existing global installation.
+- Do not replace the pinned version with `latest`, a raw HTTP command, or a private
+  copy. Do not update the Skill or CLI automatically.
+
+Installing the Skill or CLI never starts authentication. Device Authorization remains
+a separate, explicit User operation when SpecFlow access is actually needed.
 
 Set the service origin once and use that same origin for authentication and every
 resource command:
