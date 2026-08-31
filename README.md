@@ -7,9 +7,9 @@ the projection directly.
 Install SpecFlow for Codex at user scope from this exact release:
 
 ```bash
-gh skill install ztalkai/spec-flow-skill specflow@skill-v0.1.0 --agent codex --scope user
+gh skill install ztalkai/spec-flow-skill specflow@skill-v0.1.1 --agent codex --scope user
 ```
 
-Source: `ztalkai/spec-flow@45f34c41f4766b4c1633b28c09d5c163abfd6ba5`
+Source: `ztalkai/spec-flow@e19e02198f30db0c35b7cb733a210c915983859e`
 
-Release: `skill-v0.1.0`
+Release: `skill-v0.1.1`

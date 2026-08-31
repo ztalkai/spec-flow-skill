@@ -62,7 +62,7 @@ jobs:
             --agent codex --scope user
           installed_skill="${clean_home}/.codex/skills/specflow/SKILL.md"
           test -f "${installed_skill}"
-          grep -F "github-ref: ${RELEASE_TAG}" "${installed_skill}"
+          grep -F "github-ref: refs/tags/${RELEASE_TAG}" "${installed_skill}"
           grep -F "github-repo: https://github.com/ztalkai/spec-flow-skill" "${installed_skill}"
 
       - name: Create immutable Release
