@@ -212,3 +212,4 @@ jobs:
           if [[ "$(jq -r .immutable <<<"${release}")" != "true" ]]; then
             echo "Release immutability is not enabled; retain this release and recover with a higher patch" >&2
             exit 1
+          fi
