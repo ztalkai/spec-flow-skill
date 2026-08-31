@@ -105,7 +105,7 @@ jobs:
           cd "${project_dir}"
           if [[ "${INSTALLER}" == "github" ]]; then
             HOME="${user_home}" "${GH_BIN}" skill install \
-              "${PUBLIC_REPOSITORY}" "specflow@${RELEASE_TAG}" \
+              "${PUBLIC_REPOSITORY}" specflow --pin "${RELEASE_TAG}" \
               --agent "${AGENT}" --scope user
           else
             skills_package="$(jq -r .installers.skills.package "${GITHUB_WORKSPACE}/RELEASE.json")"

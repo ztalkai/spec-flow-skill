@@ -2,7 +2,7 @@
 name: specflow
 description: Author and govern authoritative Specs and the Project Glossary through the supported SpecFlow CLI.
 license: Proprietary. All rights reserved.
-skill-version: "0.1.2"
+skill-version: "0.1.3"
 compatible-cli: "@ztalkai/spec-flow-cli@0.1.0"
 ---
 
