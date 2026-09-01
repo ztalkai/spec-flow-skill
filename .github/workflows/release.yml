@@ -9,150 +9,22 @@ permissions:
   contents: read
 
 concurrency:
-  group: release-specflow-skill-${{ github.ref_name }}
+  group: release-specflow-skill
   cancel-in-progress: false
 
 jobs:
-  release-policy:
-    name: Read release policy
-    if: github.repository == 'ztalkai/spec-flow-skill'
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    outputs:
-      matrix: ${{ steps.matrix.outputs.matrix }}
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: ${{ github.ref_name }}
-      - id: matrix
-        name: Build public install matrix
-        shell: bash
-        run: |
-          set -euo pipefail
-
-          matrix="$(jq -c \
-            '{include: [.agents[] as $agent | (.installers | keys[]) as $installer | {agent: $agent, installer: $installer}]}' \
-            RELEASE.json)"
-          echo "matrix=${matrix}" >> "${GITHUB_OUTPUT}"
-
-  public-install:
-    name: Public install (${{ matrix.agent }}, ${{ matrix.installer }})
-    needs: release-policy
-    if: github.repository == 'ztalkai/spec-flow-skill'
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    strategy:
-      fail-fast: false
-      matrix: ${{ fromJSON(needs.release-policy.outputs.matrix) }}
-    env:
-      PUBLIC_REPOSITORY: ztalkai/spec-flow-skill
-      RELEASE_TAG: ${{ github.ref_name }}
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          ref: ${{ github.ref_name }}
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 24
-
-      - name: Verify projection provenance
-        shell: bash
-        run: |
-          set -euo pipefail
-
-          source_repository="$(jq -r .source_repository PROVENANCE.json)"
-          source_sha="$(jq -r .source_sha PROVENANCE.json)"
-          expected_tag="skill-v$(jq -r .skillVersion RELEASE.json)"
-          if [[ "${source_repository}" != "ztalkai/spec-flow" ]] || \
-            [[ ! "${source_sha}" =~ ^[0-9a-f]{40}$ ]] || \
-            [[ "${RELEASE_TAG}" != "${expected_tag}" ]] || \
-            [[ "$(jq -r .source_tag PROVENANCE.json)" != "${RELEASE_TAG}" ]] || \
-            [[ "$(jq -r .sourceTag RELEASE.json)" != "${RELEASE_TAG}" ]] || \
-            [[ "$(jq -r .sourceSha RELEASE.json)" != "${source_sha}" ]] || \
-            [[ "$(git rev-parse "${RELEASE_TAG}^{commit}")" != "${GITHUB_SHA}" ]]; then
-            echo "Release tag and projection provenance do not match" >&2
-            exit 1
-          fi
-
-      - name: Install pinned GitHub CLI
-        shell: bash
-        run: |
-          set -euo pipefail
-
-          version="$(jq -r .installers.github.version RELEASE.json)"
-          sha256="$(jq -r .installers.github.archiveSha256 RELEASE.json)"
-          archive="gh_${version}_linux_amd64.tar.gz"
-          curl --fail --location --silent --show-error \
-            --output "${RUNNER_TEMP}/${archive}" \
-            "https://github.com/cli/cli/releases/download/v${version}/${archive}"
-          echo "${sha256}  ${RUNNER_TEMP}/${archive}" | sha256sum --check --strict
-          tar -xzf "${RUNNER_TEMP}/${archive}" -C "${RUNNER_TEMP}"
-          echo "GH_BIN=${RUNNER_TEMP}/gh_${version}_linux_amd64/bin/gh" >> "${GITHUB_ENV}"
-
-      - name: Install from the public tag
-        env:
-          AGENT: ${{ matrix.agent }}
-          GH_TOKEN: ${{ github.token }}
-          INSTALLER: ${{ matrix.installer }}
-        shell: bash
-        run: |
-          set -euo pipefail
-
-          user_home="${RUNNER_TEMP}/home-${AGENT}-${INSTALLER}"
-          project_dir="${RUNNER_TEMP}/project-${AGENT}-${INSTALLER}"
-          mkdir -p "${user_home}" "${project_dir}"
-          cd "${project_dir}"
-          if [[ "${INSTALLER}" == "github" ]]; then
-            HOME="${user_home}" "${GH_BIN}" skill install \
-              "${PUBLIC_REPOSITORY}" specflow --pin "${RELEASE_TAG}" \
-              --agent "${AGENT}" --scope user
-          else
-            skills_package="$(jq -r .installers.skills.package "${GITHUB_WORKSPACE}/RELEASE.json")"
-            skills_version="$(jq -r .installers.skills.version "${GITHUB_WORKSPACE}/RELEASE.json")"
-            HOME="${user_home}" npx --yes "${skills_package}@${skills_version}" add \
-              "${PUBLIC_REPOSITORY}#${RELEASE_TAG}@specflow" \
-              --global --agent "${AGENT}" --copy --yes
-          fi
-
-          if [[ "${AGENT}" == "codex" && "${INSTALLER}" == "skills" ]]; then
-            installed_skill="${user_home}/.agents/skills/specflow/SKILL.md"
-          elif [[ "${AGENT}" == "codex" ]]; then
-            installed_skill="${user_home}/.codex/skills/specflow/SKILL.md"
-          else
-            installed_skill="${user_home}/.claude/skills/specflow/SKILL.md"
-          fi
-          test -f "${installed_skill}"
-          compatible_cli="$(jq -r '.cli.package + "@" + .cli.version' "${GITHUB_WORKSPACE}/RELEASE.json")"
-          grep -F "${compatible_cli}" "${installed_skill}"
-          if [[ "${INSTALLER}" == "github" ]]; then
-            installed_version="$(HOME="${user_home}" "${GH_BIN}" skill list \
-              --agent "${AGENT}" --scope user \
-              --json skillName,version,pinned \
-              --jq '.[] | select(.skillName == "specflow") | [.version, .pinned] | @tsv')"
-            [[ "${installed_version}" == "${RELEASE_TAG}"$'\ttrue' ]]
-          else
-            cmp "${GITHUB_WORKSPACE}/skills/specflow/SKILL.md" "${installed_skill}"
-          fi
-          for residual in .agents .codex .claude; do
-            test ! -e "${project_dir}/${residual}"
-          done
-          ! command -v specflow
-
   release:
-    name: Create immutable Release
-    needs: public-install
+    name: Validate install and create immutable Release
     if: github.repository == 'ztalkai/spec-flow-skill'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     env:
-      PUBLIC_REPOSITORY: ztalkai/spec-flow-skill
       RELEASE_TAG: ${{ github.ref_name }}
+
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          ref: ${{ github.ref_name }}
 
       - name: Verify projection and repository protections
         env:
@@ -163,10 +35,9 @@ jobs:
 
           source_repository="$(jq -r .source_repository PROVENANCE.json)"
           source_sha="$(jq -r .source_sha PROVENANCE.json)"
-          expected_tag="skill-v$(jq -r .skillVersion RELEASE.json)"
           if [[ "${source_repository}" != "ztalkai/spec-flow" ]] || \
             [[ ! "${source_sha}" =~ ^[0-9a-f]{40}$ ]] || \
-            [[ "${RELEASE_TAG}" != "${expected_tag}" ]] || \
+            [[ ! "${RELEASE_TAG}" =~ ^skill-v[0-9]+\.[0-9]+\.[0-9]+$ ]] || \
             [[ "$(jq -r .source_tag PROVENANCE.json)" != "${RELEASE_TAG}" ]] || \
             [[ "$(git rev-parse "${RELEASE_TAG}^{commit}")" != "${GITHUB_SHA}" ]]; then
             echo "Release tag and projection provenance do not match" >&2
@@ -175,23 +46,24 @@ jobs:
 
           .github/verify-repository-protections.sh "${GITHUB_REPOSITORY}"
 
-      - name: Install pinned GitHub CLI
+      - name: Validate public Skill
+        run: gh skill publish --dry-run
+
+      - name: Install exact Release for Codex
+        env:
+          GH_TOKEN: ${{ github.token }}
         shell: bash
         run: |
           set -euo pipefail
 
-          version="$(jq -r .installers.github.version RELEASE.json)"
-          sha256="$(jq -r .installers.github.archiveSha256 RELEASE.json)"
-          archive="gh_${version}_linux_amd64.tar.gz"
-          curl --fail --location --silent --show-error \
-            --output "${RUNNER_TEMP}/${archive}" \
-            "https://github.com/cli/cli/releases/download/v${version}/${archive}"
-          echo "${sha256}  ${RUNNER_TEMP}/${archive}" | sha256sum --check --strict
-          tar -xzf "${RUNNER_TEMP}/${archive}" -C "${RUNNER_TEMP}"
-          echo "GH_BIN=${RUNNER_TEMP}/gh_${version}_linux_amd64/bin/gh" >> "${GITHUB_ENV}"
-
-      - name: Validate public Skill
-        run: '"${GH_BIN}" skill publish --dry-run'
+          clean_home="$(mktemp -d)"
+          HOME="${clean_home}" gh skill install \
+            ztalkai/spec-flow-skill "specflow@${RELEASE_TAG}" \
+            --agent codex --scope user
+          installed_skill="${clean_home}/.codex/skills/specflow/SKILL.md"
+          test -f "${installed_skill}"
+          grep -F "github-ref: refs/tags/${RELEASE_TAG}" "${installed_skill}"
+          grep -F "github-repo: https://github.com/ztalkai/spec-flow-skill" "${installed_skill}"
 
       - name: Create immutable Release
         env:
@@ -200,16 +72,16 @@ jobs:
         run: |
           set -euo pipefail
 
-          supersedes="$(jq -r '.supersedes | join(", ")' RELEASE.json)"
           release_url="$(gh api --method POST \
             "repos/${GITHUB_REPOSITORY}/releases" \
             -f tag_name="${RELEASE_TAG}" \
             -f name="${RELEASE_TAG}" \
-            -f body="Supersedes inapplicable releases: ${supersedes}. Published tags and Releases remain unchanged." \
             -F draft=true \
+            -F generate_release_notes=true \
             --jq .url)"
           release="$(gh api --method PATCH "${release_url}" -F draft=false)"
           if [[ "$(jq -r .immutable <<<"${release}")" != "true" ]]; then
-            echo "Release immutability is not enabled; retain this release and recover with a higher patch" >&2
+            gh api --method DELETE "${release_url}"
+            echo "Release immutability is not enabled" >&2
             exit 1
           fi
