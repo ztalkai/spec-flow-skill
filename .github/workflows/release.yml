@@ -20,11 +20,13 @@ jobs:
     timeout-minutes: 10
     env:
       RELEASE_TAG: ${{ github.ref_name }}
+      SKILLS_CLI_VERSION: 1.5.23
 
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          persist-credentials: false
 
       - name: Verify projection and repository protections
         env:
@@ -49,21 +51,12 @@ jobs:
       - name: Validate public Skill
         run: gh skill publish --dry-run
 
-      - name: Install exact Release for Codex
-        env:
-          GH_TOKEN: ${{ github.token }}
+      - name: Validate exact Release install matrix
         shell: bash
         run: |
           set -euo pipefail
-
-          clean_home="$(mktemp -d)"
-          HOME="${clean_home}" gh skill install \
-            ztalkai/spec-flow-skill "specflow@${RELEASE_TAG}" \
-            --agent codex --scope user
-          installed_skill="${clean_home}/.codex/skills/specflow/SKILL.md"
-          test -f "${installed_skill}"
-          grep -F "github-ref: refs/tags/${RELEASE_TAG}" "${installed_skill}"
-          grep -F "github-repo: https://github.com/ztalkai/spec-flow-skill" "${installed_skill}"
+          bash .github/verify-install-matrix.sh \
+            release "${GITHUB_WORKSPACE}" "${RELEASE_TAG}" "${SKILLS_CLI_VERSION}"
 
       - name: Create immutable Release
         env:

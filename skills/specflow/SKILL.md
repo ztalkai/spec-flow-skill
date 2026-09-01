@@ -6,13 +6,27 @@ compatible-cli: "@ztalkai/spec-flow-cli@0.1.0"
 
 # SpecFlow
 
-Use the official public CLI as the only SpecFlow operation boundary. Install the exact
-compatible release; do not replace it with `latest`, a raw HTTP command, or a private
-copy:
+Use the official public CLI as the only SpecFlow operation boundary. Before any
+authentication or resource command, check whether `specflow` is installed and, when
+it is, run `specflow --version`.
+
+- If `specflow` is not installed, run only this exact installation command. If
+  installation fails, stop. Then run `specflow --version` again and require `0.1.0`:
 
 ```bash
 npm install --global @ztalkai/spec-flow-cli@0.1.0
 ```
+
+- If the installed version is different, stop and show the User that exact install
+  command as the repair command. Do not run that repair command automatically or
+  silently upgrade or downgrade an existing global installation.
+- If the installed version is `0.1.0`, continue without running the install command or
+  changing global state.
+- Do not replace the pinned version with `latest`, a raw HTTP command, or a private
+  copy. Do not update the Skill or CLI automatically.
+
+Installing the Skill or CLI never starts authentication. Device Authorization remains
+a separate, explicit User operation when SpecFlow access is actually needed.
 
 Set the service origin once and use that same origin for authentication and every
 resource command:

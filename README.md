@@ -4,12 +4,21 @@ This repository is the public release projection of the canonical private
 `ztalkai/spec-flow` source. Send Skill changes to the source repository; do not edit
 the projection directly.
 
-Install SpecFlow for Codex at user scope from this exact release:
+Install SpecFlow for Codex at user scope from this exact release with either
+supported installer:
 
 ```bash
-gh skill install ztalkai/spec-flow-skill specflow@skill-v0.1.1 --agent codex --scope user
+gh skill install ztalkai/spec-flow-skill specflow@skill-v0.1.5 --agent codex --scope user
+npx --yes skills@1.5.23 add https://github.com/ztalkai/spec-flow-skill/tree/skill-v0.1.5/skills/specflow --global --agent codex --yes
 ```
 
-Source: `ztalkai/spec-flow@e19e02198f30db0c35b7cb733a210c915983859e`
+Install the same release for Claude Code at user scope:
 
-Release: `skill-v0.1.1`
+```bash
+gh skill install ztalkai/spec-flow-skill specflow@skill-v0.1.5 --agent claude-code --scope user
+npx --yes skills@1.5.23 add https://github.com/ztalkai/spec-flow-skill/tree/skill-v0.1.5/skills/specflow --global --agent claude-code --yes
+```
+
+Source: `ztalkai/spec-flow@337f9f352c3c15c2dc6c44b18ed79c4a9d70ec3b`
+
+Release: `skill-v0.1.5`

@@ -11,8 +11,10 @@ for setting in secret_scanning secret_scanning_push_protection; do
   fi
 done
 
-if [[ "$(gh api "repos/${repository_name}/immutable-releases" --jq .enabled)" != "true" ]]; then
-  echo "Release immutability is disabled" >&2
+immutable_releases="$(gh api "repos/${repository_name}/immutable-releases")"
+if ! jq -e '.enabled == true and .enforced_by_owner == true' \
+  <<<"${immutable_releases}" >/dev/null; then
+  echo "Release immutability must include repository owners" >&2
   exit 1
 fi
 
@@ -22,7 +24,8 @@ while IFS= read -r ruleset_id; do
   if jq -e '
     .target == "tag" and .enforcement == "active" and
     (.conditions.ref_name.include | index("refs/tags/skill-v*")) != null and
-    ([.rules[].type] | contains(["creation", "update", "deletion"]))' \
+    (.bypass_actors | length == 0) and
+    ([.rules[].type] | contains(["update", "deletion"]))' \
     <<<"${ruleset}" >/dev/null; then
     protected_tags=true
     break
@@ -30,6 +33,6 @@ while IFS= read -r ruleset_id; do
 done < <(gh api "repos/${repository_name}/rulesets?per_page=100" --jq '.[].id')
 
 if [[ "${protected_tags}" != "true" ]]; then
-  echo "Required Skill release tag ruleset is missing" >&2
+  echo "Unbypassable Skill release tag immutability ruleset is missing" >&2
   exit 1
 fi
