@@ -71,6 +71,76 @@ identity or request an Agent grant.
 - Perform one resource operation at a time. The Skill is not a task workflow,
   orchestration service, or durable Agent session.
 
+## Authoring Specs
+
+Before deciding Spec boundaries, use current Project context already supplied by the
+task. When authoring against SpecFlow, read any missing Capability tree, Published
+Glossary, and relevant existing Specs through the CLI. Use that context to choose one
+of four outcomes: create a Spec, update or reuse an existing Spec, avoid a duplicate,
+or report a conflict that needs resolution.
+
+Place the Spec under the one provided Capability that owns the business object and
+state changed by the goal. Do not combine alternative Capability paths, and do not
+select an actor's account Capability merely because that actor performs the behavior.
+
+Use Example Mapping before writing Gherkin:
+
+1. Identify each distinct User goal by the outcome the User wants to complete, not by
+   each step, command, or state on the way to that outcome.
+2. List the business Rules governing each goal.
+3. Give each Rule concrete success, rejection, failure, and boundary Examples.
+4. Record unresolved Questions instead of inventing answers.
+
+Map one User goal to one Spec and one `Feature`. Keep that goal's success, rejection,
+failure, and boundary paths in the same Spec. Split independent goals into separate
+Specs even when they share a page, API, actor, or implementation; shared
+surfaces are not a reason to merge goals. A behavior is an independent goal only when
+it has a useful completion outcome apart from the end-to-end journey.
+
+A step that only creates pending work and the later authorized step that accepts,
+rejects, or realizes it remain one end-to-end goal when the requirement describes one
+business result. A handoff between actors does not by itself create another goal.
+
+A setting and the behavior it enables or disables remain one goal when the setting
+has no useful outcome apart from controlling that behavior. Keep enabling, disabling,
+and the resulting execution or suppression in the same Spec.
+
+For example, starting checkout, completing payment, and handling a declined payment
+remain one purchase Spec. Viewing past orders is a separate goal even on the same
+page.
+
+Map a business Rule to `Rule` when naming the group adds domain meaning, and map each
+concrete Example to a `Scenario` with an observable outcome. Use `Scenario Outline`
+when one behavior repeats with different data. When two or more Examples differ only
+in input and expected output data, put them in one `Scenario Outline` and `Examples`
+table instead of parallel Scenarios. Use `Background` only for short, incidental
+context shared by several Scenarios; keep business policy in Rules and Examples. Keep
+a declared Gherkin language and its keywords consistent; never add a localized
+language header while writing keywords from another language. When using localized
+keywords, start the document with the matching `# language:` header and use only that
+locale's exact Gherkin keywords, not colloquial synonyms; otherwise use English
+keywords without a language header.
+
+Ask the smallest focused Question before editing only when a missing goal, acting
+authority, or business policy prevents a correct Spec boundary, Rule, or observable
+outcome without choosing among plausible answers. Otherwise continue directly without
+asking or recording a Question. Keep details abstract when the requested behavior is
+already clear without them. A stated actor is sufficient unless multiple plausible
+authority levels would change the behavior. Stop asking once every goal, required
+authority, and outcome-changing policy is known; wording and other reversible
+authoring choices do not block drafting.
+
+Phrase each blocking Question as one direct choice using the requirement's own domain
+terms and the same language as the requirement. Use the compact form that matches the
+missing decision: who may perform the named action for authority; after the named
+state, whether the named action is allowed and how rejection is handled for policy;
+or whether named goal A and named goal B are the same goal or independent goals for a
+boundary. Replace every generic placeholder with the exact actor, action, object, or
+goal from the requirement; never return template wording literally. Do not replace
+the choice with a menu of examples or a broader process question. When the current
+step asks only for clarification, return the blocking Questions and no Specs or
+Gherkin until the answers are supplied.
+
 ## Stable failure recovery
 
 Handle the final `error.reason` exactly:
