@@ -1,7 +1,7 @@
 ---
 name: specflow
 description: Author and govern authoritative Specs and the Project Glossary through the supported SpecFlow CLI.
-compatible-cli: "@ztalkai/spec-flow-cli@0.1.0"
+compatible-cli: "@ztalkai/spec-flow-cli@0.1.1"
 ---
 
 # SpecFlow
@@ -11,16 +11,16 @@ authentication or resource command, check whether `specflow` is installed and, w
 it is, run `specflow --version`.
 
 - If `specflow` is not installed, run only this exact installation command. If
-  installation fails, stop. Then run `specflow --version` again and require `0.1.0`:
+  installation fails, stop. Then run `specflow --version` again and require `0.1.1`:
 
 ```bash
-npm install --global @ztalkai/spec-flow-cli@0.1.0
+npm install --global @ztalkai/spec-flow-cli@0.1.1
 ```
 
 - If the installed version is different, stop and show the User that exact install
   command as the repair command. Do not run that repair command automatically or
   silently upgrade or downgrade an existing global installation.
-- If the installed version is `0.1.0`, continue without running the install command or
+- If the installed version is `0.1.1`, continue without running the install command or
   changing global state.
 - Do not replace the pinned version with `latest`, a raw HTTP command, or a private
   copy. Do not update the Skill or CLI automatically.
@@ -46,6 +46,9 @@ identity or request an Agent grant.
 
 - Use `specflow project list` before choosing a Project; never infer a hidden current
   Project.
+- Project Creation requires a User-chosen immutable ID of 2-10 letters. If it is not
+  supplied, ask for it before running `specflow project create --name <name>
+  --project-id <id>`.
 - Archive or Restore only when the User's task requires that lifecycle change. Pass
   the opaque version returned by Project discovery or context, and reread deliberately
   after `Resource Changed` or an ambiguous transport outcome.
