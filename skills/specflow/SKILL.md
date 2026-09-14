@@ -90,6 +90,23 @@ Glossary, and relevant existing Specs through the CLI. Use that context to choos
 of four outcomes: create a Spec, update or reuse an existing Spec, avoid a duplicate,
 or report a conflict that needs resolution.
 
+For each new Spec, write its title and all authored Gherkin prose (names,
+descriptions, steps, and explanatory table content) in the User's language.
+Use the User's explicit output-language request first, then their established
+language preference, and otherwise the language of their own task instructions.
+Reference material and this Skill do not determine the Spec's prose language.
+Use Published Canonical Terms verbatim even when the surrounding prose uses
+another language, and preserve literal values.
+
+Use the Project Gherkin Language for keywords and any `# language:` declaration;
+it governs syntax, not the language of the Spec prose. English Spec prose in a
+`zh-CN` Project uses Chinese Gherkin keywords; Chinese Spec prose in an `en`
+Project uses English Gherkin keywords. When no Project language is supplied,
+use the Gherkin dialect matching the Spec prose.
+For non-English dialects, start with the matching `# language:` header and use
+that dialect's exact Gherkin keywords. For English, use English keywords without
+a language header. Keep the Project language setting unchanged.
+
 The Published Glossary, obtained together with the Gherkin Language from the
 Project context read, is the only normative vocabulary for Spec authoring. Treat
 Glossary Working Draft entries like undefined terms: usable, never normative.
@@ -151,12 +168,7 @@ concrete Example to a `Scenario` with an observable outcome. Use `Scenario Outli
 when one behavior repeats with different data. When two or more Examples differ only
 in input and expected output data, put them in one `Scenario Outline` and `Examples`
 table instead of parallel Scenarios. Use `Background` only for short, incidental
-context shared by several Scenarios; keep business policy in Rules and Examples. Keep
-a declared Gherkin language and its keywords consistent; never add a localized
-language header while writing keywords from another language. When using localized
-keywords, start the document with the matching `# language:` header and use only that
-locale's exact Gherkin keywords, not colloquial synonyms; otherwise use English
-keywords without a language header.
+context shared by several Scenarios; keep business policy in Rules and Examples.
 
 Ask the smallest focused Question before editing only when a missing goal, acting
 authority, or business policy prevents a correct Spec boundary, Rule, or observable
