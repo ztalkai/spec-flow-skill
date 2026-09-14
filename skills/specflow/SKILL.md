@@ -6,6 +6,14 @@ compatible-cli: "@ztalkai/spec-flow-cli@0.1.1"
 
 # SpecFlow
 
+Before using this Skill, read
+[`shuorenhua/SHUORENHUA.md`](shuorenhua/SHUORENHUA.md) in full, relative to this
+Skill directory. Read the references required by its execution order, then apply
+that guidance before every human-readable output. This is a required step even
+for a short reply; do not substitute remembered guidance or a globally installed
+Skill. Reuse files already fully read in the current context unless their
+content changed.
+
 Use the official public CLI as the only SpecFlow operation boundary. Before any
 authentication or resource command, check whether `specflow` is installed and, when
 it is, run `specflow --version`.
@@ -82,6 +90,32 @@ Glossary, and relevant existing Specs through the CLI. Use that context to choos
 of four outcomes: create a Spec, update or reuse an existing Spec, avoid a duplicate,
 or report a conflict that needs resolution.
 
+The Published Glossary, obtained together with the Gherkin Language from the
+Project context read, is the only normative vocabulary for Spec authoring. Treat
+Glossary Working Draft entries like undefined terms: usable, never normative.
+When the Published Glossary defines the concept a requirement refers to, write
+the Canonical Term in Feature, Rule, Scenario, and step text even when the
+requirement uses a different word for the same meaning. Substituting a
+requirement synonym is not a blocking Question.
+
+When the requirement uses a term the Published Glossary defines with a meaning
+that differs from its Definition, ask one blocking Question in the compact form
+below and draft nothing for the affected goal until the answer arrives. When the
+requirement governs, write the Spec per the requirement and report that the
+named Glossary Entry now disagrees with it; do not edit the Glossary or create a
+Terminology Finding.
+
+A material term the Published Glossary lacks never blocks drafting and never
+causes a Glossary Working Draft edit or Glossary Proposal on the Agent's own
+initiative. Materiality follows the Terminology Finding definition: the term
+must affect behavioral interpretation, so an unfamiliar ordinary word is not
+sufficient. When an existing Spec read for context disagrees with the Published
+Glossary, report the Spec and the Glossary Entry, and create a Terminology
+Finding only when the User asks. When reporting an authoring outcome to the
+User, list the Canonical Term substitutions made, the undefined material terms
+suggested as Glossary candidates, and the existing Specs that disagree with the
+Published Glossary.
+
 Place the Spec under the one provided Capability that owns the business object and
 state changed by the goal. Do not combine alternative Capability paths, and do not
 select an actor's account Capability merely because that actor performs the behavior.
@@ -137,10 +171,15 @@ Phrase each blocking Question as one direct choice using the requirement's own d
 terms and the same language as the requirement. Use the compact form that matches the
 missing decision: who may perform the named action for authority; after the named
 state, whether the named action is allowed and how rejection is handled for policy;
-or whether named goal A and named goal B are the same goal or independent goals for a
-boundary. Replace every generic placeholder with the exact actor, action, object, or
-goal from the requirement; never return template wording literally. Do not replace
-the choice with a menu of examples or a broader process question. When the current
+whether named goal A and named goal B are the same goal or independent goals for a
+boundary; or, for a meaning conflict between a requirement and a term the Published
+Glossary defines, "the Published Glossary defines the named Canonical Term as the
+quoted Definition; this requirement uses it as the quoted meaning; which governs, the
+Glossary or the requirement?". That conflict form asks only the one governing choice
+and never asks whether the Glossary should change. Replace every generic placeholder
+with the exact actor, action, object, goal, or term from the requirement; never
+return template wording literally. Do not replace the choice
+with a menu of examples or a broader process question. When the current
 step asks only for clarification, return the blocking Questions and no Specs or
 Gherkin until the answers are supplied.
 
@@ -162,3 +201,27 @@ Handle the final `error.reason` exactly:
 Disabled Users, revoked or expired Sessions, Role downgrade, Project Archive, and
 stale expected versions are authoritative current-state failures. Do not reuse cached
 authority or silently broaden the Session's Project scope.
+
+## Agent-authored prose
+
+Apply the bundled Shuorenhua guidance in
+[`shuorenhua/SHUORENHUA.md`](shuorenhua/SHUORENHUA.md) to every piece of
+human-readable prose the Agent authors before returning it: blocking Questions,
+explanations, outcome and status reports, and authored Spec or Glossary prose. Its
+scene, severity, level, scope, and fidelity checks govern the pass, and the
+`references/` and `evals/` material it links to ships inside the same bundle. Do not
+reduce it to a banned-phrase list, and do not ask the User to install or invoke
+Shuorenhua separately.
+
+The pass is silent and never changes meaning. SpecFlow contracts outrank style:
+Canonical Terms, quoted Definitions, quantities and conditions, actor and action
+relations, Gherkin language and keywords, identifiers, CLI commands and flags, JSON
+fields, error and log names, and the compact Question forms stay exact. Grammar and
+phrasing may improve without changing observable behavior. The pass must not invent
+a business rule, erase a conflict or limitation, add a blocking Question, edit the
+Glossary, or create a Finding, and it must not leak a review checklist,
+alternatives, or the review itself into the reply. Annotation mode and output
+formats remain the User's choice; use them only when the User asks.
+
+Keep each required conflict report self-contained: retain both source meanings
+or concrete conflicting values, even when a Question also quotes them.

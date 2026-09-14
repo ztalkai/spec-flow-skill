@@ -31,11 +31,6 @@ fi
 for installer in gh-skill npx-skills; do
   for agent in codex claude-code; do
     clean_home="$(mktemp -d)"
-    if [[ "${agent}" == "codex" && "${installer}" == "npx-skills" ]]; then
-      installed_skill="${clean_home}/.agents/skills/specflow/SKILL.md"
-    else
-      installed_skill="${clean_home}/.${agent/claude-code/claude}/skills/specflow/SKILL.md"
-    fi
 
     if [[ "${installer}" == "gh-skill" ]]; then
       if [[ "${mode}" == "local" ]]; then
@@ -46,12 +41,20 @@ for installer in gh-skill npx-skills; do
         HOME="${clean_home}" GH_CONFIG_DIR="${clean_home}/.config/gh" \
           gh skill install ztalkai/spec-flow-skill "specflow@${release_tag}" \
           --agent "${agent}" --scope user
+      fi
+      installed_dir="$(HOME="${clean_home}" \
+        GH_CONFIG_DIR="${clean_home}/.config/gh" \
+        gh skill list --agent "${agent}" --scope user --json path | \
+        jq -er 'if length == 1 then .[0].path
+                else error("expected exactly one installed skill") end')"
+      installed_skill="${installed_dir}/SKILL.md"
+      if [[ "${mode}" == "release" ]]; then
         grep -Fx "    github-ref: refs/tags/${release_tag}" "${installed_skill}"
         grep -Fx "    github-repo: https://github.com/ztalkai/spec-flow-skill" "${installed_skill}"
         HOME="${clean_home}" GH_CONFIG_DIR="${clean_home}/.config/gh" \
           gh skill list --agent "${agent}" --scope user --json \
           skillName,sourceURL,scope,version,path | \
-          jq -e --arg path "${installed_skill%/SKILL.md}" \
+          jq -e --arg path "${installed_dir}" \
             --arg ref "${release_tag}" \
             'length == 1 and .[0].skillName == "specflow" and
              .[0].sourceURL == "https://github.com/ztalkai/spec-flow-skill" and
@@ -59,6 +62,11 @@ for installer in gh-skill npx-skills; do
              .[0].path == $path'
       fi
     else
+      if [[ "${agent}" == "codex" ]]; then
+        installed_skill="${clean_home}/.agents/skills/specflow/SKILL.md"
+      else
+        installed_skill="${clean_home}/.${agent/claude-code/claude}/skills/specflow/SKILL.md"
+      fi
       if [[ "${mode}" == "local" ]]; then
         package="${source_root}"
       else
@@ -83,6 +91,16 @@ for installer in gh-skill npx-skills; do
     installed_compatible_cli="$(sed -n 's/^compatible-cli: //p' "${installed_skill}" | tr -d "'\"")"
     test "${installed_compatible_cli}" = "${compatible_cli}"
     cmp <(skill_body "${skill_path}") <(skill_body "${installed_skill}")
+
+    installed_dir="${installed_skill%/SKILL.md}"
+    while IFS= read -r bundled_path; do
+      [[ "${bundled_path}" == "SKILL.md" ]] && continue
+      if ! cmp "${source_root}/skills/specflow/${bundled_path}" \
+        "${installed_dir}/${bundled_path}"; then
+        echo "Bundled file missing or changed after install: ${bundled_path}" >&2
+        exit 1
+      fi
+    done < <(cd "${source_root}/skills/specflow" && find . -type f -print | sed 's|^\./||' | sort)
 
     if [[ "${installer}" == "npx-skills" ]]; then
       HOME="${clean_home}" npm_config_cache="${clean_home}/.npm" \
